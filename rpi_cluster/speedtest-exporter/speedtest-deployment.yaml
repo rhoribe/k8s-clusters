@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speedtest-deployment
+  namespace: monitoring
+  labels:
+    app: speedtest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: speedtest
+  template:
+    metadata:
+      labels:
+        app: speedtest
+    spec:
+      containers:
+        - name: speedtest
+          image: miguelndecarvalho/speedtest-exporter
+          ports:
+            - containerPort: 9798
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 512Mi
+            limits:
+              cpu: 1.0
+              memory: 1Gi
+          env:
+            - name: SPEEDTEST_PORT
+              value: "9798"
+#            - name: SPEEDTEST_SERVER
+#              value: "44798"
+
+

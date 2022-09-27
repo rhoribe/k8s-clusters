@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: home
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: plex
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: plex-config
+            optional: false
+        image: linuxserver/plex
+        imagePullPolicy: Always
+        ports:
+            - containerPort: 32400
+            - containerPort: 1900
+            - containerPort: 3005
+            - containerPort: 5353
+            - containerPort: 8384
+            - containerPort: 32469
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 1
+          tcpSocket:
+            port: 32400
+          timeoutSeconds: 2
+        name: plex
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          tcpSocket:
+            port: 32400
+          timeoutSeconds: 2
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 256Mi
+          limits:
+            cpu: 0.8
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - NET_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /tv
+          name: tv
+        - mountPath: /config
+          name: config 
+        - mountPath: /movies
+          name: movies
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name : tv
+          persistentVolumeClaim:
+            claimName: plex-tv-pvc 
+        - name : config
+          persistentVolumeClaim:
+            claimName: plex-config-pvc 
+        - name : movies
+          persistentVolumeClaim:
+            claimName: plex-movies-pvc 

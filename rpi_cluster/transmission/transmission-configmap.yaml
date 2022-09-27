@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: transmission-config
+  namespace: home
+data:
+  TRANSMISSION_DOWNLOAD_QUEUE_SIZE: "4"
+  TRANSMISSION_RATIO_LIMIT: "2"
+  TRANSMISSION_RATIO_LIMIT_ENABLED: "false"
+  TRANSMISSION_SPEED_LIMIT_DOWN: "10000"
+  TRANSMISSION_SPEED_LIMIT_DOWN_ENABLED: "false"
+  TRANSMISSION_SPEED_LIMIT_UP: "1000"
+  TRANSMISSION_SPEED_LIMIT_UP_ENABLED: "true"
+  WEBPROXY_ENABLED: "false"
+  TZ: "America/Sao_Paulo"
+  PUID: "1000"
+  PGID: "1000"

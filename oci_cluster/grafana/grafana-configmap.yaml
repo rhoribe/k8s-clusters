@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: monitoring
+data:
+  grafana.ini: |
+    [analytics]
+    check_for_updates = true
+    [log]
+    mode = console
+    [paths]
+    data = /var/lib/grafana/data
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    [smtp]
+    enabled = true
+    host = smtp.office365.com:587
+    user = rhoribe1908@gmail.com
+    password = pass
+    from_address = rhoribe1908@gmail.com
+    [server]
+    domain = grafana.horibe.com.br

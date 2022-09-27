@@ -1,0 +1,112 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus-server
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+  serviceName: prometheus-service
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+        thanos-store-api: "true"
+    spec:   
+      serviceAccountName: monitoring
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - raspberrypi  
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yaml"
+            - "--storage.tsdb.path=/prometheus/"
+            - "--web.enable-lifecycle"
+            - "--storage.tsdb.no-lockfile"
+            # - "--storage.tsdb.min-block-duration=2h"
+            # - "--storage.tsdb.max-block-duration=2h"
+          ports:
+            - name: prometheus
+              containerPort: 9090
+          resources:
+            requests:
+              cpu: 0.5m
+              memory: 512Mi
+            limits:
+              cpu: 1.0
+              memory: 1.5Gi
+          volumeMounts:
+            - name: prometheus-storage
+              mountPath: /prometheus/
+            - name: prometheus-config
+              mountPath: /etc/prometheus/
+            - name: prometheus-rules
+              mountPath: /etc/prometheus/rules
+        - name: thanos
+          image: rhoribe/thanos-arm64:latest
+          command: ["thanos"]
+          args:
+            - "sidecar"
+            - "--log.level=debug"
+            - "--tsdb.path=/prometheus"
+            - "--prometheus.url=http://127.0.0.1:9090"
+            - "--reloader.config-file=/etc/prometheus/prometheus.yaml"
+            - "--reloader.rule-dir=/etc/prometheus/rules/"
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - name: http-sidecar
+              containerPort: 10902
+            - name: grpc
+              containerPort: 10901
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 50m
+              memory: 256Mi
+          livenessProbe:
+              httpGet:
+                port: 10902
+                path: /-/healthy
+          readinessProbe:
+            httpGet:
+              port: 10902
+              path: /-/ready
+          volumeMounts:
+            - name: prometheus-storage
+              mountPath: /prometheus
+            - name: prometheus-config
+              mountPath: /etc/prometheus/
+            - name: prometheus-rules
+              mountPath: /etc/prometheus/rules
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+      volumes:
+        - name: prometheus-config
+          configMap:
+            defaultMode: 420
+            name: prometheus-server-conf
+        - name: prometheus-rules
+          configMap:
+            name: prometheus-rules
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc

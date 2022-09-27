@@ -1,0 +1,49 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  config.yml: |
+    global:
+    templates:
+    - '/etc/alertmanager/*.tmpl'
+    route:
+      receiver: telegram
+      group_by: ['alertname', 'priority']
+      group_wait: 10s
+      repeat_interval: 30m
+      routes:
+        - receiver: telegram
+          match:
+            team: home
+          group_wait: 10s
+          repeat_interval: 1m
+ 
+    receivers:
+    #  - name: 'telepush'
+    #    webhook_configs:
+    #     - send_resolved: true
+    #       url: 'https://telepush.dev/api/inlets/alertmanager/4dc494'
+     - name: 'telegram'
+       telegram_configs:
+        - bot_token: '5582982535:AAEWV2RE6yITGeMn6fb3XSUR8_FtrKELMrE'
+          chat_id: 639296017
+          api_url: "https://api.telegram.org"
+          send_resolved: true
+          parse_mode: HTML
+  default.tmpl: |
+    {{ define "telegram.default.message" }}
+    {{ if gt (len .Alerts.Firing) 0 }}
+    Alerts Firing:
+    {{ template "__text_alert_list" .Alerts.Firing }}
+    {{ end }}
+    {{ if gt (len .Alerts.Resolved) 0 }}
+    Alerts Resolved:
+    {{ template "__text_alert_list" .Alerts.Resolved }}
+    {{ end }}
+    {{ end }}
+
+
+    

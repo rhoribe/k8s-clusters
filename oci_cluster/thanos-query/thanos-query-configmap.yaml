@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thanos-query
+  labels:
+    name: thanos-query
+  namespace: monitoring
+data:
+  query.yaml: |-
+    - targets:
+      - thanos-sidecar-oci.monitoring.svc:10901
+      - 10.8.0.2:32001

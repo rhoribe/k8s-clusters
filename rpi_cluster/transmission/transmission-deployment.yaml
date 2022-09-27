@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+  namespace: home
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: transmission
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: transmission-config
+            optional: false
+        - secretRef:
+            name: transmission-secret
+            optional: false
+        image: linuxserver/transmission
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 1
+          tcpSocket:
+            port: 9091
+          timeoutSeconds: 2
+        name: transmission
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          tcpSocket:
+            port: 9091
+          timeoutSeconds: 2
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 256Mi
+          limits:
+            cpu: 0.5
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - NET_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /downloads
+          name: downloads
+        - mountPath: /config
+          name: config 
+        - mountPath: /watch
+          name: watch
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name : downloads
+          persistentVolumeClaim:
+            claimName: transmission-downloads-pvc 
+        - name : config
+          persistentVolumeClaim:
+            claimName: transmission-config-pvc 
+        - name : watch
+          persistentVolumeClaim:
+            claimName: transmission-watch-pvc 

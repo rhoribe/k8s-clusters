@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  template:
+    metadata:
+      name: grafana
+      labels:
+        app: grafana-app
+    spec:
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: kubernetes.io/hostname
+      #           operator: In
+      #           values:
+      #           - node4      
+      containers: 
+        - name: grafana-app-container
+          image: grafana/grafana:9.0.5
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 50m
+              memory: 256Mi
+          livenessProbe:
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+            httpGet: null
+            tcpSocket:
+              port: 3000
+          readinessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+            httpGet: null
+            tcpSocket:
+              port: 3000
+          ports:
+            - containerPort: 3000
+          volumeMounts:   
+            - name: grafana
+              mountPath: /var/lib/grafana
+              subPath: grafana-db 
+            - name: config
+              mountPath: "/etc/grafana/"
+ 
+      volumes:
+        - name : grafana
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+        - name: config
+          configMap:
+            name: grafana-config
+            optional: false
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-app
+
