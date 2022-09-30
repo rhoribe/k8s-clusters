@@ -20,6 +20,9 @@ data:
             team: home
           group_wait: 10s
           repeat_interval: 1m
+        - receiver: pageduty
+          match:
+            team: home 
  
     receivers:
     #  - name: 'telepush'
@@ -33,6 +36,9 @@ data:
           api_url: "https://api.telegram.org"
           send_resolved: true
           parse_mode: HTML
+     - name: 'pageduty'
+       pagerduty_configs:
+        - service_key: '5a7497877f3d4d0cc0959c00687e55d5'
   default.tmpl: |
     {{ define "telegram.default.message" }}
     {{ if gt (len .Alerts.Firing) 0 }}
@@ -44,6 +50,10 @@ data:
     {{ template "__text_alert_list" .Alerts.Resolved }}
     {{ end }}
     {{ end }}
+    {{ define "pagerduty.default.description" }}{{ template "__subject" . }}{{ end }}
+    {{ define "pagerduty.default.client" }}{{ template "__alertmanager" . }}{{ end }}
+    {{ define "pagerduty.default.clientURL" }}{{ template "__alertmanagerURL" . }}{{ end }}
+    {{ define "pagerduty.default.instances" }}{{ template "__text_alert_list" . }}{{ end }}
 
 
     
