@@ -94,20 +94,20 @@ data:
         rules:
         - alert: Download Speed is slow
           annotations:
-            summary: Download < 300MB/s
+            summary: Download < 500MB/s
           expr: |
-            (speedtest_download_bits_per_second*10^-6)<300
+            (speedtest_download_bits_per_second*10^-6)<500
           for: 5m
           labels:
-            team: home
+            team: net
         - alert: Upload Speed is slow
           annotations:
-            summary: Upload < 150MB/s
+            summary: Upload < 250MB/s
           expr: |
-            (speedtest_upload_bits_per_second*10^-6)<150
+            (speedtest_upload_bits_per_second*10^-6)<250
           for: 5m
           labels:
-            team: home
+            team: net
         - alert: Ping High 
           annotations:
             summary: Ping > 20ms
@@ -115,7 +115,7 @@ data:
             (speedtest_ping_latency_milliseconds)>20
           for: 5m
           labels:
-            team: home
+            team: net
         - alert: Jitter High 
           annotations:
             summary: Jitter > 20ms
@@ -123,4 +123,4 @@ data:
             (speedtest_jitter_latency_milliseconds)>20
           for: 5m
           labels:
-            team: home
+            team: net
