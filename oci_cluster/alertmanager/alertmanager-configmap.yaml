@@ -40,7 +40,7 @@ data:
           send_resolved: true
           parse_mode: HTML
      - name: 'speedtest'
-       webhook_configs: https://maker.ifttt.com/trigger/internet/json/with/key/dVXPsqeAFTxgBeB2INYUA6
+       webhook_configs: 'https://maker.ifttt.com/trigger/internet/json/with/key/dVXPsqeAFTxgBeB2INYUA6'
      - name: 'pageduty'
        pagerduty_configs:
         - service_key: '5a7497877f3d4d0cc0959c00687e55d5'
