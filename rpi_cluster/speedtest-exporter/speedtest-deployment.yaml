@@ -30,7 +30,7 @@ spec:
           env:
             - name: SPEEDTEST_PORT
               value: "9798"
-           - name: SPEEDTEST_SERVER
+            - name: SPEEDTEST_SERVER
               value: "43290"
 
 
